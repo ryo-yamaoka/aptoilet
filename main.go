@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	timeLayout = "2006/01/02 15:04:05"
+	apiEndpoint = "https://pb52o89yja.execute-api.us-east-1.amazonaws.com/Prod/pir"
+	timeLayout  = "2006/01/02 15:04:05"
 )
 
 type toiletInfo struct {
@@ -24,13 +25,7 @@ type toiletInfo struct {
 }
 
 func main() {
-	endpoint := os.Getenv("AP_TOILET_ENDPOINT")
-	if endpoint == "" {
-		fmt.Println("Required set environment variable AP_TOILET_ENDPOINT")
-		os.Exit(1)
-	}
-
-	resp, err := http.Get(endpoint)
+	resp, err := http.Get(apiEndpoint)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
