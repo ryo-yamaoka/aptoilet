@@ -25,27 +25,20 @@ type toiletInfo struct {
 }
 
 func main() {
-	resp, err := http.Get(apiEndpoint)
+	b, err := getToiletInfo()
 	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	defer resp.Body.Close()
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf("Failed to toilet API request: %s", err.Error())
 		os.Exit(1)
 	}
 
 	var t []toiletInfo
 	if err := json.Unmarshal(b, &t); err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err)
 		os.Exit(1)
 	}
 	if len(t) == 0 {
 		fmt.Println("Missing toilet information")
-		return
+		os.Exit(1)
 	}
 
 	sort.Slice(t, func(i, j int) bool {
@@ -58,4 +51,18 @@ func main() {
 	}
 	sensingTime := time.Unix(t[0].UpdateAt/1000, 0) // UpdateAt はミリ秒3桁が含まれるため下3桁を破棄する
 	fmt.Printf("%s %s\n", sensingTime.Format(timeLayout), usingStatus)
+}
+
+func getToiletInfo() ([]byte, error) {
+	resp, err := http.Get(apiEndpoint)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to API request: %s", err.Error())
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("Unexpected response code: %d >= 400", resp.StatusCode)
+	}
+
+	return ioutil.ReadAll(resp.Body)
 }
