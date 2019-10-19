@@ -1,15 +1,17 @@
-.PHONY: help
-.DEFAULT_GOAL := help
+.DEFAULT_GOAL := build
 
 OS_LIST=windows linux darwin
 ARCH_LIST=amd64 386
 
+.PHONY: test
 test: ## Run all test
-	@go test ./... -cover
+	@gotest ./... -v -cover -race
 
+.PHONY: build
 build: ## Build binary file
-	@go build -o aptoilet main.go
+	@go build -o aptoilet *.go
 
+.PHONY: cross-compile
 cross-compile: ## Build binaries for Windows, Linux, and macOS of x64 and x86
 	@mkdir bin
 	@for GOOS in ${OS_LIST}; do \
@@ -22,8 +24,10 @@ cross-compile: ## Build binaries for Windows, Linux, and macOS of x64 and x86
 		done \
 	done
 
+.PHONY: clean
 clean:
 	@-rm -rf bin/
 
+.PHONY: help
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
